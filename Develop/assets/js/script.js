@@ -2,7 +2,7 @@
 const taskForm = $("#task-form");
 const taskName = $("#task-name");
 const taskDescription = $("#task-description");
-const taskDueDate = $("#taskDueDate");
+const taskDueDate = $("#task-due-date");
 const mainBtn = $("#main");
 const addBtn = $("#add-btn");
 const modal = $("#exampleModal");
@@ -11,7 +11,6 @@ function readProjectsFromStorage() {
   const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
   return tasks;
 }
-
 
 function saveProjectsToStorage(tasks) {
   
@@ -49,11 +48,11 @@ function createTaskCard(task) {
 
 function renderTaskList() {
   const tasks = readProjectsFromStorage();
-  const todoList = $("#todo");
+  const todoList = $("#todo-cards");
   todoList.empty();
-  const inProgressList = $("#in-progress");
+  const inProgressList = $("#in-progress-cards");
   inProgressList.empty();
-  const doneList = $("#done");
+  const doneList = $("#done-cards");
   doneList.empty();
 
   if (tasks) {
@@ -88,56 +87,33 @@ function renderTaskList() {
 }
 
 $(document).on('click', '.delete', function() {
-    const taskId = $(this).data('project-id'); // Using .data() for data attributes
+    const taskId = $(this).data('project-id'); 
     
     const tasks = readProjectsFromStorage();
 
     for (let i = 0; i < tasks.length; i++) {
               if (tasks[i].id === taskId) {
                 tasks.splice(i, 1);
-                
+                break;
               }
             }
           
-           
-                  
-    // Assuming tasks is an array of objects and id is a property of these objects
-    // const filteredTasks = tasks.filter(task => task.id !== taskId);
-  
     saveProjectsToStorage(tasks);
   
     renderTaskList();
 });
 
-// $(document).on('click', '.delete', function() {
-//     const taskId = $(this).attr('data-project-id');
-    
-//     const tasks = readProjectsFromStorage();
-
-//     for (let i = 0; i < tasks.length; i++) {
-//       if (tasks[i].id === taskId) {
-//         tasks.splice(i, 1);
-        
-//       }
-//     }
-  
-//     saveProjectsToStorage(tasks);
-  
-//     renderTaskList();
-//   }
-// );
-
 function handleAddTask(event) {
   event.preventDefault();
 
   const task = taskName.val();
-  const taskDesc = taskDescription.val();
+  const taskType = taskDescription.val();
   const taskDue = taskDueDate.val();
 
   const newTask = {
     id: crypto.randomUUID(),
     name: task,
-    description: taskDesc,
+    type: taskType,
     dueDate: taskDue,
     status: "to-do",
   };
@@ -157,15 +133,15 @@ function handleAddTask(event) {
 function handleDrop(event, ui) {
 
   const tasks = readProjectsFromStorage();
-
-  const taskIde = ui.draggable[0].dataset.taskId;
+  const taskId = ui.draggable.data('project-id');
 
   const newStatus = event.target.id;
 
   for (let task of tasks) {
     
-    if (task.id === taskIde) {
+    if (task.id === taskId) {
       task.status = newStatus;
+      break;
     }
   }
 
@@ -173,18 +149,17 @@ function handleDrop(event, ui) {
   renderTaskList();
 }
 
-taskForm.on("click", handleAddTask);
+taskForm.on("submit", handleAddTask);
 
 $(document).ready(function () {
 
   renderTaskList();
 
-  $("#taskDueDate").datepicker({
+  $("#task-due-date").datepicker({
     changeMonth: true,
     changeYear: true,
   });
 
-  // ? Make lanes droppable
   $(".lane").droppable({
     accept: ".draggable",
     drop: handleDrop,
